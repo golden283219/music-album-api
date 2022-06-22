@@ -1,7 +1,8 @@
-import { Get, Route, Tags, Post, Put, Delete, Body, Path, Security, Header } from "tsoa";
+import { Get, Route, Tags, Post, Put, Delete, Body, Path, Security, Header, Query } from "tsoa";
 import { Artist } from "../models";
 import {
   getArtists,
+  getSearchArtists,
   createArtist,
   IArtistPayload,
   getArtist,
@@ -18,6 +19,12 @@ export default class ArtistController {
     return getArtists();
   }
 
+  //@Security('jwt')
+  @Get("search")
+  public async getSearchArtists(@Query() keyword: string, @Query() skip: string, @Query() limit: string): Promise<Array<Artist>> {
+    return getSearchArtists(keyword, Number(skip), Number(limit));
+  }
+  
   @Security('jwt')
   @Post("/")
   public async createArtist(@Body() body: IArtistPayload): Promise<Artist> {

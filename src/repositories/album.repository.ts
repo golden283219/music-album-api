@@ -1,4 +1,4 @@
-import { getRepository } from "typeorm";
+import { getRepository, Like } from "typeorm";
 import { Album, Category, Publisher } from "../models";
 
 export interface IAlbumPayload {
@@ -7,27 +7,30 @@ export interface IAlbumPayload {
   artist_id: number;
 }
 
-export const getAlbums = async (skip: number, limit: number, publisher_slug: string): Promise<Array<Album>> => {
+export const getAlbums = async (skip: number, limit: number, publisher_slug: string, artist_slug: string): Promise<Array<Album>> => {
   const albumRepository = getRepository(Album);
-  if(publisher_slug == ''){
+  // if(publisher_slug == ''){
+  //   return albumRepository.find( { 
+  //     relations: ['artist', 'category', 'publisher'],
+  //     order: { created_at: 'DESC'},
+  //     skip: skip,
+  //     take: limit,
+  //   } );
+  // }
+  // else{
+  //   const publisherRepository = getRepository(Publisher);
+  //   const publisher = await publisherRepository.findOne({slug: publisher_slug});
     return albumRepository.find( { 
+      where: {
+        publisher: {slug: Like('%' + publisher_slug + '%')},
+        artist: {slug: Like('%' + artist_slug + '%')},
+      }, 
       relations: ['artist', 'category', 'publisher'],
       order: { created_at: 'DESC'},
       skip: skip,
       take: limit,
     } );
-  }
-  else{
-    const publisherRepository = getRepository(Publisher);
-    const publisher = await publisherRepository.findOne({slug: publisher_slug});
-    return albumRepository.find( { 
-      where: {publisher: publisher}, 
-      relations: ['artist', 'category', 'publisher'],
-      order: { created_at: 'DESC'},
-      skip: skip,
-      take: limit,
-    } );
-  }
+  //}
 };
 
 export const getFeaturedAlbums = async (): Promise<Array<Album>> => {
@@ -115,6 +118,20 @@ export const getGenreAlbums = async (slug: string, skip: number, limit: number):
       take: limit,
     } );
   }
+};
+
+export const getSearchAlbums = async (keyword: string, skip: number, limit: number): Promise<Array<Album>> => {
+
+  const albumRepository = getRepository(Album);
+
+  return albumRepository.find( { 
+    where: {title: Like('%' + keyword + '%')}, 
+    relations: ['artist', 'category', 'publisher'],
+    order: { created_at: 'DESC'},
+    skip: skip,
+    take: limit,
+  } );
+
 };
 
 export const createAlbum = async (payload: IAlbumPayload): Promise<Album> => {

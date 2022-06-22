@@ -10,6 +10,7 @@ export const getAll = Joi.object().keys({
   skip: Joi.number(),
   limit: Joi.number(),
   publisher: Joi.string().allow('').allow(null),
+  artist: Joi.string().allow('').allow(null),
 });
 
 export const getPickedAlbums = Joi.object().keys({ 
@@ -40,4 +41,10 @@ export const update = Joi.object().keys({
 
 export const destroy = Joi.object().keys({ 
   id: Joi.number(),
+});
+
+export const search = Joi.object().keys({ 
+  skip: Joi.number(),
+  limit: Joi.number(),
+  keyword: Joi.string().allow('').allow(null),
 });

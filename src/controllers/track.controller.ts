@@ -26,8 +26,8 @@ import {
 export default class TrackController {
   //@Security('jwt')
   @Get()
-  public async getTracks(@Query() skip: string, @Query() limit: string, @Query() publisher: string, @Query() title: string, @Query() bpmlow: string, @Query() bpmhigh: string, @Query() key: string, @Query() genre: string, @Query() label: string, @Query() artist: string): Promise<Array<Track>> {
-    return getTracks(Number(skip), Number(limit), publisher, title, Number(bpmlow), Number(bpmhigh), key, genre, label, artist);
+  public async getTracks(@Query() pickType: string, @Query() skip: string, @Query() limit: string, @Query() publisherSlug: string, @Query() artistSlug: string, @Query() title: string, @Query() bpmlow: string, @Query() bpmhigh: string, @Query() key: string, @Query() genre: string, @Query() label: string, @Query() artist: string): Promise<Array<Track>> {
+    return getTracks(pickType, Number(skip), Number(limit), publisherSlug, artistSlug, title, Number(bpmlow), Number(bpmhigh), key, genre, label, artist);
   }
 
   //@Security('jwt')

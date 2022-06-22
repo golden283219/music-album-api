@@ -14,6 +14,7 @@ import {
   getOneAlbum,
   updateAlbum,
   deleteAlbum,
+  getSearchAlbums,
 } from "../repositories/album.repository";
 
 @Route("/api/v1/albums")
@@ -21,8 +22,8 @@ import {
 export default class AlbumController {
   //@Security('jwt')
   @Get("")
-  public async getAlbums(@Query() skip: string, @Query() limit: string, @Query() publisher: string): Promise<Array<Album>> {
-    return getAlbums(Number(skip), Number(limit), publisher);
+  public async getAlbums(@Query() skip: string, @Query() limit: string, @Query() publisher: string, @Query() artist: string): Promise<Array<Album>> {
+    return getAlbums(Number(skip), Number(limit), publisher, artist);
   }
 
   //@Security('jwt')
@@ -59,6 +60,12 @@ export default class AlbumController {
   @Get("genre-albums/:slug")
   public async getGenreAlbums(@Path() slug: string, @Query() skip: string, @Query() limit: string): Promise<Array<Album>> {
     return getGenreAlbums(slug, Number(skip), Number(limit));
+  }
+
+  //@Security('jwt')
+  @Get("search")
+  public async getSearchAlbums(@Query() keyword: string, @Query() skip: string, @Query() limit: string): Promise<Array<Album>> {
+    return getSearchAlbums(keyword, Number(skip), Number(limit));
   }
 
   //@Security('jwt')

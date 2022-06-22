@@ -1,4 +1,4 @@
-import { getRepository } from "typeorm";
+import { getRepository, Like } from "typeorm";
 import { Artist } from "../models";
 
 export interface IArtistPayload {
@@ -15,6 +15,17 @@ export const getArtists = async (): Promise<Array<Artist>> => {
   return artistRepository.find();
 };
 
+export const getSearchArtists = async (keyword: string, skip: number, limit: number): Promise<Array<Artist>> => {
+
+  const artistRepository = getRepository(Artist);
+
+  return artistRepository.find( { 
+    where: {name: Like('%' + keyword + '%')}, 
+    skip: skip,
+    take: limit,
+  } );
+
+};
 export const createArtist = async (payload: IArtistPayload): Promise<Artist> => {
   const artistRepository = getRepository(Artist);
   const artist = new Artist();

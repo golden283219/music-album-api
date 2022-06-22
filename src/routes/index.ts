@@ -7,9 +7,10 @@ import PostRouter  from "./post.router";
 import CommentRouter  from "./comment.router";
 import ArtistRouter  from "./artist.router";
 import AlbumRouter  from "./album.router";
-import CategoryRouter from "./category.router"
-import TrackRouter from "./track.router"
-import KeyRouter from "./key.router"
+import CategoryRouter from "./category.router";
+import TrackRouter from "./track.router";
+import KeyRouter from "./key.router";
+import PublisherRouter from "./publisher.router";
 import { Passport } from "../middleware";
 
 
@@ -27,10 +28,10 @@ router.use("/auth", AuthRouter);
 router.use("/users", passport.authenticate('jwt', {session:false}), UserRouter);
 router.use("/posts", passport.authenticate('jwt', {session:false}), PostRouter);
 router.use("/comments", passport.authenticate('jwt', {session:false}), CommentRouter);
-router.use("/artists", passport.authenticate('jwt', {session:false}), ArtistRouter);
+router.use("/artists", ArtistRouter);
 router.use("/albums", AlbumRouter);
 router.use("/categories", CategoryRouter);
 router.use("/tracks", TrackRouter);
 router.use("/keys", KeyRouter);
-
+router.use("/publishers", PublisherRouter);
 export default router;

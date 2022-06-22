@@ -20,81 +20,88 @@ export interface IResponse {
   message: String;
 }
 
-export const getTracks = async (skip: number, limit: number, publisher_slug: string, title: string, bpmlow: number, bpmhigh: number, key: string, genre: string, label: string, artist: string): Promise<Array<Track>> => {
+export const getTracks = async (pickType: string, skip: number, limit: number, publisherSlug: string, artistSlug:string, title: string, bpmlow: number, bpmhigh: number, key: string, genre: string, label: string, artist: string): Promise<Array<Track>> => {
   const trackRepository = getRepository(Track);
+  if(publisherSlug === ''){
+    if(label !== ''){
+      label = slugify(label);
+    }
+  }
+  if(artistSlug === ''){
+    if(artist !== ''){
+      artist = slugify(artist);
+    }
+  }
+  let pickTypeLow = 0, pickTypeHigh = 10;
+  if(pickType === 'vinyl'){
+    pickTypeLow = 1;
+    pickTypeHigh = 1;
+  }
+  if(pickType === 'bandcamp'){
+    pickTypeLow = 2;
+    pickTypeHigh = 2;
+  }
+  if(pickType === 'master'){
+    pickTypeLow = 2;
+    pickTypeHigh = 4;
+  }
+  if(pickType === 'rip'){
+    pickTypeLow = 3;
+    pickTypeHigh = 5;
+  }
+  let findOptions;
   if(genre == ''){
     if(key == ''){
-      return trackRepository.find( { 
-        where: {
-          album: { publisher: { name: Like('%' + label + '%') } }, 
-          title: Like('%' + title + '%'),
-          artist: { name: Like('%' + artist + '%'),} ,
-          bpm: Between(bpmlow, bpmhigh),
-
-        }, 
-        relations: ['artist', 'category', 'album', 'album.publisher', 'key'],
-        order: { created_at: 'DESC'},
-        skip: skip,
-        take: limit,
-      } );
+      findOptions = {
+        album: { publisher: { slug: Like('%' + label + '%') }, vinyl_album: Between(pickTypeLow, pickTypeHigh) }, 
+        title: Like('%' + title + '%'),
+        artist: { slug: Like('%' + artist + '%'),} ,
+        bpm: Between(bpmlow, bpmhigh),
+      };
     }else{
-      return trackRepository.find( { 
-        where: {
-          album: { publisher: { name: Like('%' + label + '%') } }, 
-          title: Like('%' + title + '%'),
-          artist: { name: Like('%' + artist + '%'),} ,
-          bpm: Between(bpmlow, bpmhigh),
-          key: {id: In(key.split(','))},
+      findOptions = {
+        album: { publisher: { slug: Like('%' + label + '%') }, vinyl_album: Between(pickTypeLow, pickTypeHigh)  }, 
+        title: Like('%' + title + '%'),
+        artist: { slug: Like('%' + artist + '%'),} ,
+        bpm: Between(bpmlow, bpmhigh),
+        key: {id: In(key.split(','))},
 
-        }, 
-        relations: ['artist', 'category', 'album', 'album.publisher', 'key'],
-        order: { created_at: 'DESC'},
-        skip: skip,
-        take: limit,
-      } );
+      };
     }
   }
   else{
     if(key == ''){
-      return trackRepository.find( { 
-        where: {
-          album: { publisher: { name: Like('%' + label + '%') } }, 
-          title: Like('%' + title + '%'),
-          artist: { name: Like('%' + artist + '%'),} ,
-          category: {id: In(genre.split(','))},
-          bpm: Between(bpmlow, bpmhigh),
+      findOptions = {
+        album: { publisher: { slug: Like('%' + label + '%') }, vinyl_album: Between(pickTypeLow, pickTypeHigh)  }, 
+        title: Like('%' + title + '%'),
+        artist: { slug: Like('%' + artist + '%'),} ,
+        category: {id: In(genre.split(','))},
+        bpm: Between(bpmlow, bpmhigh),
 
-        }, 
-        relations: ['artist', 'category', 'album', 'album.publisher', 'key'],
-        order: { created_at: 'DESC'},
-        skip: skip,
-        take: limit,
-      } );
+      };
     }else{
-      return trackRepository.find( { 
-        where: {
-          album: { publisher: { name: Like('%' + label + '%') } }, 
-          title: Like('%' + title + '%'),
-          artist: { name: Like('%' + artist + '%'),} ,
-          bpm: Between(bpmlow, bpmhigh),
-          category: {id: In(genre.split(','))},
-          key: {id: In(key.split(','))},
+      findOptions = {
+        album: { publisher: { slug: Like('%' + label + '%') }, vinyl_album: Between(pickTypeLow, pickTypeHigh)  }, 
+        title: Like('%' + title + '%'),
+        artist: { slug: Like('%' + artist + '%'),} ,
+        bpm: Between(bpmlow, bpmhigh),
+        category: {id: In(genre.split(','))},
+        key: {id: In(key.split(','))},
 
-        }, 
-        relations: ['artist', 'category', 'album', 'album.publisher', 'key'],
-        order: { created_at: 'DESC'},
-        skip: skip,
-        take: limit,
-      } );
+      };
     }
   }
-  
+  return trackRepository.find( { 
+    where: findOptions, 
+    relations: ['artist', 'category', 'album', 'album.publisher', 'key'],
+    order: { created_at: 'DESC'},
+    skip: skip,
+    take: limit,
+  } );
 
 };
 
 export const getSearchTracks = async (keyword: string, skip: number, limit: number): Promise<Array<Track>> => {
-
-  console.log (keyword, skip, limit);
 
   const trackRepository = getRepository(Track);
 

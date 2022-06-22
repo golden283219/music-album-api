@@ -10,6 +10,7 @@ import {
   getSlug,
   update,
   destroy,
+  search,
 } from "../schema/album.schema"
 
 const router = express.Router();
@@ -17,9 +18,9 @@ const router = express.Router();
 router.get("/", Validator(getAll, "query"), async (req, res) => {
   console.log(req.query);
   const controller = new AlbumController();
-  const response = await controller.getAlbums(req.query.skip.toString(), req.query.limit.toString(), req.query.publisher.toString());
+  const response = await controller.getAlbums(req.query.skip.toString(), req.query.limit.toString(), req.query.publisher.toString(), req.query.artist.toString());
   //return res.status(201).send(response);
-  return res.json({albums: response, album_count: response.length});
+  return res.json({albums: response, albumCount: response.length});
 });
 
 router.get("/featured-albums", Validator(getAll, "query"), async (req, res) => {
@@ -53,7 +54,7 @@ router.get("/picked-albums", Validator(getPickedAlbums, "query"), async (req, re
   const controller = new AlbumController();
   const response = await controller.getPickedAlbums(req.query.type.toString(), req.query.skip.toString(), req.query.limit.toString(), req.query.publisher.toString());
   //return res.status(201).send(response);
-  return res.json({albums: response, album_count: response.length});
+  return res.json({albums: response, albumCount: response.length});
 });
 
 router.get("/genre-albums/:slug", Validator(getGenreAlbums, "query"), async (req, res) => {
@@ -61,7 +62,16 @@ router.get("/genre-albums/:slug", Validator(getGenreAlbums, "query"), async (req
   const controller = new AlbumController();
   const response = await controller.getGenreAlbums(req.params.slug, req.query.skip.toString(), req.query.limit.toString());
   //return res.status(201).send(response);
-  return res.json({albums: response, album_count: response.length});
+  return res.json({albums: response, albumCount: response.length});
+});
+
+router.get("/search", Validator(search, "query"), async (req, res) => {
+
+  const search_mode_value = "Albums matching with " + req.query.keyword.toString();
+  const controller = new AlbumController();
+  const response = await controller.getSearchAlbums(req.query.keyword.toString(), req.query.skip.toString(), req.query.limit.toString());
+  //return res.status(201).send(response);
+  return res.json({albums: response, albumCount: response.length, search_mode_value});
 });
 
 router.post("/", Validator(create, "body"), async (req, res) => {
