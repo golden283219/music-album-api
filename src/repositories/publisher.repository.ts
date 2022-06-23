@@ -21,8 +21,7 @@ export const getSearchPublishers = async (keyword: string, skip: number, limit: 
 
   return publisherRepository.find( { 
     where: {name: Like('%' + keyword + '%')}, 
-    skip: skip,
-    take: limit,
+
   } );
 
 };

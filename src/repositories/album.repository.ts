@@ -7,30 +7,19 @@ export interface IAlbumPayload {
   artist_id: number;
 }
 
-export const getAlbums = async (skip: number, limit: number, publisher_slug: string, artist_slug: string): Promise<Array<Album>> => {
+export const getAlbums = async (skip: number, limit: number, keyword: string, publisher_slug: string, artist_slug: string): Promise<Array<Album>> => {
   const albumRepository = getRepository(Album);
-  // if(publisher_slug == ''){
-  //   return albumRepository.find( { 
-  //     relations: ['artist', 'category', 'publisher'],
-  //     order: { created_at: 'DESC'},
-  //     skip: skip,
-  //     take: limit,
-  //   } );
-  // }
-  // else{
-  //   const publisherRepository = getRepository(Publisher);
-  //   const publisher = await publisherRepository.findOne({slug: publisher_slug});
-    return albumRepository.find( { 
-      where: {
-        publisher: {slug: Like('%' + publisher_slug + '%')},
-        artist: {slug: Like('%' + artist_slug + '%')},
-      }, 
-      relations: ['artist', 'category', 'publisher'],
-      order: { created_at: 'DESC'},
-      skip: skip,
-      take: limit,
-    } );
-  //}
+
+  return albumRepository.find( { 
+    where: {
+      publisher: {slug: Like('%' + publisher_slug + '%')},
+      artist: {slug: Like('%' + artist_slug + '%')},
+      title: Like('%' + keyword + '%')
+    }, 
+    relations: ['artist', 'category', 'publisher'],
+    order: { created_at: 'DESC'},
+  } );
+
 };
 
 export const getFeaturedAlbums = async (): Promise<Array<Album>> => {
@@ -82,8 +71,7 @@ export const getPickedAlbums = async (type: string, skip: number, limit: number,
       where: {vinyl_album: 1}, 
       relations: ['artist', 'category', 'publisher', 'tracks'],
       order: { created_at: 'DESC'},
-      skip: skip,
-      take: limit,
+
     } );
   }
   else{
@@ -91,8 +79,7 @@ export const getPickedAlbums = async (type: string, skip: number, limit: number,
       where: {bandcamp_album: 1}, 
       relations: ['artist', 'category', 'publisher', 'tracks'],
       order: { created_at: 'DESC'},
-      skip: skip,
-      take: limit,
+
     } );
   }
 };
@@ -105,8 +92,7 @@ export const getGenreAlbums = async (slug: string, skip: number, limit: number):
     return albumRepository.find( { 
       relations: ['artist', 'category', 'publisher'],
       order: { created_at: 'DESC'},
-      skip: skip,
-      take: limit,
+
     } );
   }
   else{
@@ -114,8 +100,7 @@ export const getGenreAlbums = async (slug: string, skip: number, limit: number):
       where: {category: category}, 
       relations: ['artist', 'category', 'publisher'],
       order: { created_at: 'DESC'},
-      skip: skip,
-      take: limit,
+
     } );
   }
 };
@@ -128,8 +113,6 @@ export const getSearchAlbums = async (keyword: string, skip: number, limit: numb
     where: {title: Like('%' + keyword + '%')}, 
     relations: ['artist', 'category', 'publisher'],
     order: { created_at: 'DESC'},
-    skip: skip,
-    take: limit,
   } );
 
 };

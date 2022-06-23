@@ -21,6 +21,7 @@ router.get("/", Validator(getAll, "query"), async (req, res) => {
   const pickType = req.query.picktype.toString();
   const skip = req.query.skip.toString();
   const limit = req.query.limit.toString();
+  const keyword = req.query.keyword.toString();
   const publisherSlug = req.query.publisherslug.toString();
   const artistSlug = req.query.artistslug.toString();
   const title = req.query.title.toString();
@@ -31,9 +32,9 @@ router.get("/", Validator(getAll, "query"), async (req, res) => {
   const label = req.query.label.toString();
   const artist = req.query.artist.toString();
 
-  const response = await controller.getTracks(pickType, skip, limit, publisherSlug, artistSlug, title, bpmlow, bpmhigh, key, genre, label, artist);
+  const response = await controller.getTracks(pickType, skip, limit, keyword, publisherSlug, artistSlug, title, bpmlow, bpmhigh, key, genre, label, artist);
   //return res.status(200).send(response);
-  return res.json({tracks: response, trackCount: response.length});
+  return res.json({tracks: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), trackCount: response.length});
 });
 
 router.get("/search", Validator(search, "query"), async (req, res) => {
@@ -42,7 +43,7 @@ router.get("/search", Validator(search, "query"), async (req, res) => {
   const controller = new TrackController();
   const response = await controller.getSearchTracks(req.query.keyword.toString(), req.query.skip.toString(), req.query.limit.toString());
   //return res.status(201).send(response);
-  return res.json({tracks: response, trackCount: response.length, search_mode_value});
+  return res.json({tracks: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), trackCount: response.length, search_mode_value});
 });
 
 router.get("/genre-tracks/:slug", Validator(getGenreTracks, "query"), async (req, res) => {
@@ -50,7 +51,7 @@ router.get("/genre-tracks/:slug", Validator(getGenreTracks, "query"), async (req
   const controller = new TrackController();
   const response = await controller.getGenreTracks(req.params.slug, req.query.skip.toString(), req.query.limit.toString());
   //return res.status(201).send(response);
-  return res.json({tracks: response, trackCount: response.length});
+  return res.json({tracks: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), trackCount: response.length});
 });
 
 router.post("/uploadBulk", Validator(upload, "body"), async (req, res) => {

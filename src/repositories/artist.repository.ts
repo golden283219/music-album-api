@@ -21,8 +21,7 @@ export const getSearchArtists = async (keyword: string, skip: number, limit: num
 
   return artistRepository.find( { 
     where: {name: Like('%' + keyword + '%')}, 
-    skip: skip,
-    take: limit,
+
   } );
 
 };

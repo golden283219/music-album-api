@@ -20,7 +20,7 @@ export interface IResponse {
   message: String;
 }
 
-export const getTracks = async (pickType: string, skip: number, limit: number, publisherSlug: string, artistSlug:string, title: string, bpmlow: number, bpmhigh: number, key: string, genre: string, label: string, artist: string): Promise<Array<Track>> => {
+export const getTracks = async (pickType: string, skip: number, limit: number, keyword:string, publisherSlug: string, artistSlug:string, title: string, bpmlow: number, bpmhigh: number, key: string, genre: string, label: string, artist: string): Promise<Array<Track>> => {
   const trackRepository = getRepository(Track);
   if(publisherSlug === ''){
     if(label !== ''){
@@ -57,6 +57,7 @@ export const getTracks = async (pickType: string, skip: number, limit: number, p
         title: Like('%' + title + '%'),
         artist: { slug: Like('%' + artist + '%'),} ,
         bpm: Between(bpmlow, bpmhigh),
+        search: Like('%' + keyword + '%')
       };
     }else{
       findOptions = {
@@ -65,7 +66,7 @@ export const getTracks = async (pickType: string, skip: number, limit: number, p
         artist: { slug: Like('%' + artist + '%'),} ,
         bpm: Between(bpmlow, bpmhigh),
         key: {id: In(key.split(','))},
-
+        search: Like('%' + keyword + '%')
       };
     }
   }
@@ -77,7 +78,7 @@ export const getTracks = async (pickType: string, skip: number, limit: number, p
         artist: { slug: Like('%' + artist + '%'),} ,
         category: {id: In(genre.split(','))},
         bpm: Between(bpmlow, bpmhigh),
-
+        search: Like('%' + keyword + '%')
       };
     }else{
       findOptions = {
@@ -87,7 +88,7 @@ export const getTracks = async (pickType: string, skip: number, limit: number, p
         bpm: Between(bpmlow, bpmhigh),
         category: {id: In(genre.split(','))},
         key: {id: In(key.split(','))},
-
+        search: Like('%' + keyword + '%')
       };
     }
   }
@@ -95,8 +96,7 @@ export const getTracks = async (pickType: string, skip: number, limit: number, p
     where: findOptions, 
     relations: ['artist', 'category', 'album', 'album.publisher', 'key'],
     order: { created_at: 'DESC'},
-    skip: skip,
-    take: limit,
+
   } );
 
 };
@@ -109,8 +109,7 @@ export const getSearchTracks = async (keyword: string, skip: number, limit: numb
     where: {search: Like('%' + keyword + '%')}, 
     relations: ['artist', 'category', 'album', 'album.publisher'],
     order: { created_at: 'DESC'},
-    skip: skip,
-    take: limit,
+
   } );
 
 };
@@ -124,8 +123,7 @@ export const getGenreTracks = async (slug: string, skip: number, limit: number):
     where: {category: category}, 
     relations: ['artist', 'category', 'album', 'album.publisher'],
     order: { created_at: 'DESC'},
-    skip: skip,
-    take: limit,
+
   } );
 
 };

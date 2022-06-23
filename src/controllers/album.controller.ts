@@ -22,8 +22,8 @@ import {
 export default class AlbumController {
   //@Security('jwt')
   @Get("")
-  public async getAlbums(@Query() skip: string, @Query() limit: string, @Query() publisher: string, @Query() artist: string): Promise<Array<Album>> {
-    return getAlbums(Number(skip), Number(limit), publisher, artist);
+  public async getAlbums(@Query() skip: string, @Query() limit: string, @Query() keyword: string, @Query() publisher: string, @Query() artist: string): Promise<Array<Album>> {
+    return getAlbums(Number(skip), Number(limit), keyword, publisher, artist);
   }
 
   //@Security('jwt')

@@ -6,10 +6,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Post } from "./post";
-import { Comment } from "./comment";
 
-@Entity()
+import { Subscriber } from "./subscriber";
+
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -26,15 +26,32 @@ export class User {
   @Column()
   password!: String;
 
-  @OneToMany((_type) => Post, (post: Post) => post.user)
-  posts!: Array<Post>;
+  @Column()
+  active!: number;
 
-  @OneToMany((_type) => Comment, (comment: Comment) => comment.user)
-  comments!: Array<Comment>;
+  @Column()
+  admin!: number;
+  
+  @Column()
+  banned!: number;
+
+  @Column()
+  avatar!: String;
+
+  @Column()
+  activation_token!: String;
+
+  @Column()
+  remember_token!: String;
+
+  @OneToMany((_type) => Subscriber, (subscriber: Subscriber) => subscriber.user)
+  subscribers!: Array<Subscriber>;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  created_at!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updated_at!: Date;
+
+  message: String;
 }

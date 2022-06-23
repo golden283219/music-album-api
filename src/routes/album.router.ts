@@ -18,9 +18,15 @@ const router = express.Router();
 router.get("/", Validator(getAll, "query"), async (req, res) => {
   console.log(req.query);
   const controller = new AlbumController();
-  const response = await controller.getAlbums(req.query.skip.toString(), req.query.limit.toString(), req.query.publisher.toString(), req.query.artist.toString());
+  const skip = req.query.skip.toString();
+  const limit = req.query.limit.toString();
+  const keyword = req.query.keyword.toString();
+  const publisher = req.query.publisher.toString();
+  const artist = req.query.artist.toString();
+
+  const response = await controller.getAlbums(skip, limit, keyword, publisher, artist);
   //return res.status(201).send(response);
-  return res.json({albums: response, albumCount: response.length});
+  return res.json({albums: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), albumCount: response.length});
 });
 
 router.get("/featured-albums", Validator(getAll, "query"), async (req, res) => {
@@ -54,7 +60,7 @@ router.get("/picked-albums", Validator(getPickedAlbums, "query"), async (req, re
   const controller = new AlbumController();
   const response = await controller.getPickedAlbums(req.query.type.toString(), req.query.skip.toString(), req.query.limit.toString(), req.query.publisher.toString());
   //return res.status(201).send(response);
-  return res.json({albums: response, albumCount: response.length});
+  return res.json({albums: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), albumCount: response.length});
 });
 
 router.get("/genre-albums/:slug", Validator(getGenreAlbums, "query"), async (req, res) => {
@@ -62,7 +68,7 @@ router.get("/genre-albums/:slug", Validator(getGenreAlbums, "query"), async (req
   const controller = new AlbumController();
   const response = await controller.getGenreAlbums(req.params.slug, req.query.skip.toString(), req.query.limit.toString());
   //return res.status(201).send(response);
-  return res.json({albums: response, albumCount: response.length});
+  return res.json({albums: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), albumCount: response.length});
 });
 
 router.get("/search", Validator(search, "query"), async (req, res) => {
@@ -71,7 +77,7 @@ router.get("/search", Validator(search, "query"), async (req, res) => {
   const controller = new AlbumController();
   const response = await controller.getSearchAlbums(req.query.keyword.toString(), req.query.skip.toString(), req.query.limit.toString());
   //return res.status(201).send(response);
-  return res.json({albums: response, albumCount: response.length, search_mode_value});
+  return res.json({albums: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), albumCount: response.length, search_mode_value});
 });
 
 router.post("/", Validator(create, "body"), async (req, res) => {

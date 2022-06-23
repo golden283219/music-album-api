@@ -12,11 +12,11 @@ import {
 
 const router = express.Router();
 
-router.get("/", Validator(getAll, "query"), async (_req, res) => {
+router.get("/", Validator(getAll, "query"), async (req, res) => {
   const controller = new ArtistController();
   const response = await controller.getArtists();
   //return res.status(200).send(response);
-  return res.json({artists: response, artistCount: response.length});
+  return res.json({artists: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), artistCount: response.length});
 });
 
 router.get("/search", Validator(search, "query"), async (req, res) => {
@@ -25,7 +25,7 @@ router.get("/search", Validator(search, "query"), async (req, res) => {
   const controller = new ArtistController();
   const response = await controller.getSearchArtists(req.query.keyword.toString(), req.query.skip.toString(), req.query.limit.toString());
   //return res.status(201).send(response);
-  return res.json({artists: response, artistCount: response.length, search_mode_value});
+  return res.json({artists: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), artistCount: response.length, search_mode_value});
 });
 
 router.post("/", Validator(create, "body"), async (req, res) => {

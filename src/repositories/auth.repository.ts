@@ -8,6 +8,11 @@ export interface IAuthPayload {
   password: String;
 }
 
+export interface SignInPayload {
+  email: String;
+  password: String;
+}
+
 export interface OAuthPayload {
   status?: String;
   result_code?: number;
@@ -26,7 +31,7 @@ export const signUpUser = async (payload: IAuthPayload): Promise<User> => {
   });
 };
 
-export const signInUser = async (payload: IAuthPayload): Promise<User | null> => {
+export const signInUser = async (payload: SignInPayload): Promise<User | null> => {
   const userRepository = getRepository(User);
   const user = await userRepository.findOne({ email: payload.email });
   if (!user) return null;

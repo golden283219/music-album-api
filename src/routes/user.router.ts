@@ -11,6 +11,14 @@ import {
 
 const router = express.Router();
 
+router.get("/user-info", async (req, res) => {
+  const controller = new UserController();
+  const response = await controller.getUserInfo(req.query.token.toString());
+  return res.json({ result_code: 0, user_info: response });
+  //return res.status(200).send(response);
+
+});
+
 router.get("/", Validator(getAll, "query"), async (_req, res) => {
   const controller = new UserController();
   const response = await controller.getUsers();

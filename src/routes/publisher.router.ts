@@ -12,11 +12,11 @@ import {
 
 const router = express.Router();
 
-router.get("/", Validator(getAll, "query"), async (_req, res) => {
+router.get("/", Validator(getAll, "query"), async (req, res) => {
   const controller = new PublisherController();
   const response = await controller.getPublishers();
   //return res.status(200).send(response);
-  return res.json({labels: response, labelCount: response.length});
+  return res.json({labels: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), labelCount: response.length});
 });
 
 router.get("/search", Validator(search, "query"), async (req, res) => {
@@ -25,7 +25,7 @@ router.get("/search", Validator(search, "query"), async (req, res) => {
   const controller = new PublisherController();
   const response = await controller.getSearchPublishers(req.query.keyword.toString(), req.query.skip.toString(), req.query.limit.toString());
   //return res.status(201).send(response);
-  return res.json({labels: response, labelCount: response.length, search_mode_value});
+  return res.json({labels: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), labelCount: response.length, search_mode_value});
 });
 
 router.post("/", Validator(create, "body"), async (req, res) => {

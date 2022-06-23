@@ -1,5 +1,5 @@
 import { getRepository } from "typeorm";
-import { User } from "../models";
+import { Subscriber, User } from "../models";
 
 export interface IUserPayload {
   firstName: String;
@@ -8,9 +8,32 @@ export interface IUserPayload {
   password: String;
 }
 
+export interface UserInfoPayload {
+  name: String;
+  email: String;
+  expirationDate: number;
+  downloadLimit: number;
+  downloadedData: number;
+  specialDownloadLimit: number;
+  specialDownloadedData: number;
+  admin: number;
+}
+
 export interface IResponse {
   message: String;
 }
+
+export const getUserInfo = async (email: string): Promise<User | null> => {
+  const userRepository = getRepository(User);
+  // const user = await userRepository.findOne({ email: email });
+  const user = await userRepository.findOne({
+    where: { email: email },
+    relations: ['subscribers'],
+    // order: {subscribers: 'DESC'}
+  });
+  if (!user) return null;
+  return user;
+};
 
 export const getUsers = async (): Promise<Array<User>> => {
   const userRepository = getRepository(User);

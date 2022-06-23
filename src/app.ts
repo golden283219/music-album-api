@@ -22,6 +22,7 @@ app.use(morgan("tiny"));
 app.use(express.static("public"));
 
 app.use('/api/v1', routes);
+app.use('/uploads', express.static('uploads'));
 
 app.get('/', (req, res) => res.json({status:"success", message:"Home API", data:null, success:true}));
 

@@ -12,6 +12,7 @@ export const upload = Joi.object().keys({
 export const getAll = Joi.object().keys({ 
   skip: Joi.number(),
   limit: Joi.number(),
+  keyword: Joi.string().allow('').allow(null),
   picktype: Joi.string().allow('').allow(null),
   publisherslug: Joi.string().allow('').allow(null),
   artistslug: Joi.string().allow('').allow(null),

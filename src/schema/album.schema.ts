@@ -9,6 +9,7 @@ export const create = Joi.object().keys({
 export const getAll = Joi.object().keys({ 
   skip: Joi.number(),
   limit: Joi.number(),
+  keyword: Joi.string().allow('').allow(null),
   publisher: Joi.string().allow('').allow(null),
   artist: Joi.string().allow('').allow(null),
 });
