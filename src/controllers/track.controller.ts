@@ -1,6 +1,8 @@
 import Ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
+import http from "http";
 import path from "path";
+import secretConfig from "../config/secret";
 import { Get, Route, Tags, Post, Put, Delete, Body, Path, Security, Query, Header } from "tsoa";
 import { Track } from "../models";
 import {
@@ -17,7 +19,14 @@ import {
   createBulk,
   createCategory,
   createArtist,
+  downloadTrack,
+  getFileSize,
+  IResponse,
 } from "../repositories/track.repository";
+import {
+  getUserInfo,
+} from "../repositories/user.repository";
+import { JwtPayload, verify } from "jsonwebtoken";
 
 
 
@@ -27,19 +36,108 @@ export default class TrackController {
   //@Security('jwt')
   @Get()
   public async getTracks(@Query() pickType: string, @Query() skip: string, @Query() limit: string, @Query() keyword: string, @Query() publisherSlug: string, @Query() artistSlug: string, @Query() title: string, @Query() bpmlow: string, @Query() bpmhigh: string, @Query() key: string, @Query() genre: string, @Query() label: string, @Query() artist: string): Promise<Array<Track>> {
-    return getTracks(pickType, Number(skip), Number(limit), keyword, publisherSlug, artistSlug, title, Number(bpmlow), Number(bpmhigh), key, genre, label, artist);
+    const result = getTracks(pickType, Number(skip), Number(limit), keyword, publisherSlug, artistSlug, title, Number(bpmlow), Number(bpmhigh), key, genre, label, artist);
+    let newResult = result;
+    newResult = Promise.all( (await result).map( async (track: Track) => {
+      const aiffFilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.aiff');
+      track.aiff_size = await getFileSize(aiffFilePath);
+      const mp3FilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.mp3');
+      track.mp3_size = await getFileSize(mp3FilePath);
+      return track;
+
+    }));
+
+    return newResult;
   }
 
   //@Security('jwt')
   @Get("search")
   public async getSearchTracks(@Query() keyword: string, @Query() skip: string, @Query() limit: string): Promise<Array<Track>> {
-    return getSearchTracks(keyword, Number(skip), Number(limit));
+    const result = getSearchTracks(keyword, Number(skip), Number(limit));
+    let newResult = result;
+    newResult = Promise.all( (await result).map( async (track: Track) => {
+      const aiffFilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.aiff');
+      track.aiff_size = await getFileSize(aiffFilePath);
+      const mp3FilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.mp3');
+      track.mp3_size = await getFileSize(mp3FilePath);
+      return track;
+
+    }));
+
+    return newResult;
   }
   
   //@Security('jwt')
   @Get("genre-tracks/:slug")
   public async getGenreTracks(@Path() slug: string, @Query() skip: string, @Query() limit: string): Promise<Array<Track>> {
-    return getGenreTracks(slug, Number(skip), Number(limit));
+    const result =  getGenreTracks(slug, Number(skip), Number(limit));
+    let newResult = result;
+    newResult = Promise.all( (await result).map( async (track: Track) => {
+      const aiffFilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.aiff');
+      track.aiff_size = await getFileSize(aiffFilePath);
+      const mp3FilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.mp3');
+      track.mp3_size = await getFileSize(mp3FilePath);
+      return track;
+
+    }));
+
+    return newResult;
+  }
+
+  //@Security('jwt')
+  @Get("download-track/:slug/as/:ext/:check")
+  public async downloadTrack(@Path() slug: string, @Path() ext: string, @Path() check: string, @Query() token: string): Promise<IResponse | null> {
+    const track = await getTrack(slug);
+    const title = track.album.artist + '-' + track.title;
+    const fileName = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.' + ext);
+    const fileSize = Math.round(await getFileSize(fileName) / 1048576);
+    const jwt_encryption = secretConfig.jwt_encryption;
+    let email: string = '';
+    verify(token, jwt_encryption, (err, user: JwtPayload) => {
+      if (err)
+        return null;
+
+        email = user.email;
+    });
+    const user = await getUserInfo(email);
+    if(!user){
+      return {result: 1, message: 'Please sign in first.'};
+    }
+    const userId = user.id;
+    if(!user.subscribers[0]){
+      return {result: 2, message: 'Please subscribe first.'};
+    }
+    const timeLimit = user.subscribers?Date.parse(user.subscribers[0].time_limit.toString()):0;
+    const currentTime = Date.now();
+    const specialAlbum = track.album.vinyl_album;
+    let downloadsLeft = 0;
+
+    if (specialAlbum) {
+      downloadsLeft = user.subscribers[0].special_download_limit - user.subscribers[0].special_downloaded_data;
+    } else {
+      downloadsLeft = user.subscribers[0].download_limit - user.subscribers[0].downloaded_data;
+    }
+    if (!(timeLimit >= currentTime && downloadsLeft >= fileSize)) {
+      return {result: 3, message: 'You need to upgrade your subscription.'};
+    }
+
+    if (check == 'check') {
+      return {result: 0, message: 'You can download this file.'};
+    }
+
+    //download the file
+    const file = fs.createWriteStream(title + '.' + ext);
+    const url = 'http://localhost:8000/' + secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.' + ext;
+    const request = http.get(url, (response: { pipe: (arg0: fs.WriteStream) => void; }) => {
+      response.pipe(file);
+      file.on("finish", () => {
+        file.close();
+        console.log("Download Completed");
+    });
+    })
+
+    
+    
   }
 
   //@Security('jwt')
@@ -132,8 +230,6 @@ export default class TrackController {
               console.log(albumId);
 
             })
-            
-
           }
         });
       });

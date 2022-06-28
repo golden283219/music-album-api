@@ -17,6 +17,7 @@ export interface IUploadBulkPayload {
 }
 
 export interface IResponse {
+  result: number;
   message: String;
 }
 
@@ -114,6 +115,73 @@ export const getSearchTracks = async (keyword: string, skip: number, limit: numb
 
 };
 
+export const getFileSize = async (filePath: string): Promise<number> => {
+
+  if(fs.existsSync(filePath)){
+    const state = fs.statSync(filePath);
+    const fileSize  = Math.round(state.size);
+    return fileSize;
+    // fs.stat(filePath, (error, stat) => {
+    //   if (error) throw error;
+      
+    //   if(stat.isFile()){
+    //     console.log(Math.round(stat.size));
+    //     const fileSize  = Math.round(stat.size);
+    //     return fileSize;
+    //   }
+    // });
+  }
+  return 0;
+};
+
+export const downloadTrack = async (slug: string, ext: string, check: string, token:string): Promise<Array<Track>> => {
+  const trackRepository = getRepository(Track);
+  const categoryRepository = getRepository(Category);
+  const category = await categoryRepository.findOne({slug: slug});
+
+  const result =  trackRepository.find( { 
+    where: {category: category}, 
+    relations: ['artist', 'category', 'album', 'album.publisher'],
+    order: { created_at: 'DESC'},
+
+  } );
+  const newResult = (await result).map(track => {
+
+    let mp3_size = 0;
+    let aiff_size = 0;
+    const aiffFilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.aiff');
+    
+    if(fs.existsSync(aiffFilePath)){
+      fs.stat(aiffFilePath, async (error, stat) => {
+        if (error) throw error;
+        
+        if(stat.isFile()){
+          console.log(Math.round(stat.size));
+          aiff_size  = Math.round(stat.size);
+        }
+      });
+    }
+    const mp3FilePath: string = path.resolve(secretConfig.upload_path + '/audios/' + track.location + '/org/' + track.slug + '.mp3');
+    
+    if(fs.existsSync(mp3FilePath)){
+      fs.stat(mp3FilePath, (error, stat) => {
+        if (error) throw error;
+        
+        if(stat.isFile()){
+          console.log(stat.size);
+          mp3_size  = Math.round(stat.size);
+        }
+      });
+    }
+    console.log("aiff_size: ", aiff_size);
+    track.aiff_size = aiff_size;
+    track.mp3_size = mp3_size;
+    return track;
+  })
+  return newResult;
+
+};
+
 export const getGenreTracks = async (slug: string, skip: number, limit: number): Promise<Array<Track>> => {
   const trackRepository = getRepository(Track);
   const categoryRepository = getRepository(Category);
@@ -125,6 +193,7 @@ export const getGenreTracks = async (slug: string, skip: number, limit: number):
     order: { created_at: 'DESC'},
 
   } );
+
 
 };
 
@@ -244,8 +313,8 @@ export const uploadBulk = async (albumData: Map<string, string>): Promise<Track>
       title: albumData.get("title"),
       slug: slug,
       location: dir,
-      //duration: albumData.get("catalog"),
-      //filesize: albumData.get("filesize"),
+      duration: Number.parseInt(albumData.get("duration")),
+      filesize: Number.parseInt(albumData.get("filesize")),
       album_id: Number.parseInt(albumId),
       category_id: Number.parseInt(categoryId),
       artist_id: Number.parseInt(artistId),

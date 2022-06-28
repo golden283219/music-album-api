@@ -109,7 +109,8 @@
 						"format": "double"
 					},
 					"time_limit": {
-						"type": "string"
+						"type": "string",
+						"format": "date-time"
 					},
 					"download_limit": {
 						"type": "number",
@@ -213,6 +214,52 @@
 				"required": [
 					"email",
 					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserInfoPayload": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"expirationDate": {
+						"type": "number",
+						"format": "double"
+					},
+					"downloadLimit": {
+						"type": "number",
+						"format": "double"
+					},
+					"downloadedData": {
+						"type": "number",
+						"format": "double"
+					},
+					"specialDownloadLimit": {
+						"type": "number",
+						"format": "double"
+					},
+					"specialDownloadedData": {
+						"type": "number",
+						"format": "double"
+					},
+					"admin": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"name",
+					"email",
+					"expirationDate",
+					"downloadLimit",
+					"downloadedData",
+					"specialDownloadLimit",
+					"specialDownloadedData",
+					"admin"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -808,7 +855,7 @@
 								"schema": {
 									"allOf": [
 										{
-											"$ref": "#/components/schemas/User"
+											"$ref": "#/components/schemas/UserInfoPayload"
 										}
 									],
 									"nullable": true

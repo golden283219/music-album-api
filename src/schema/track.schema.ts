@@ -9,6 +9,10 @@ export const upload = Joi.object().keys({
   uploadpath: Joi.string().required(),
 });
 
+export const downloadTrack = Joi.object().keys({
+  token: Joi.string().required(),
+})
+
 export const getAll = Joi.object().keys({ 
   skip: Joi.number(),
   limit: Joi.number(),

@@ -1,5 +1,7 @@
 import express from "express";
-
+import path from "path";
+import fs from "fs";
+import secretConfig from "../config/secret";
 import TrackController from "../controllers/track.controller";
 import { Validator } from "../middleware"
 import {
@@ -11,6 +13,7 @@ import {
   destroy,
   search,
   getGenreTracks,
+  downloadTrack,
 } from "../schema/track.schema"
 
 const router = express.Router();
@@ -33,7 +36,7 @@ router.get("/", Validator(getAll, "query"), async (req, res) => {
   const artist = req.query.artist.toString();
 
   const response = await controller.getTracks(pickType, skip, limit, keyword, publisherSlug, artistSlug, title, bpmlow, bpmhigh, key, genre, label, artist);
-  //return res.status(200).send(response);
+
   return res.json({tracks: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), trackCount: response.length});
 });
 
@@ -45,6 +48,17 @@ router.get("/search", Validator(search, "query"), async (req, res) => {
   //return res.status(201).send(response);
   return res.json({tracks: response.slice(Number(req.query.skip), Number(req.query.skip) + Number(req.query.limit)), trackCount: response.length, search_mode_value});
 });
+
+router.get("/download-track/:slug/as/:ext/:check", Validator(downloadTrack, "query"), async(req, res) => {
+  const controller = new TrackController();
+  const slug = req.params.slug;
+  const ext = req.params.ext;
+  const check = req.params.check;
+  const token = req.query.token.toString();
+  const response = await controller.downloadTrack(slug, ext, check, token);
+  return res.status(201).send(response);
+
+})
 
 router.get("/genre-tracks/:slug", Validator(getGenreTracks, "query"), async (req, res) => {
 

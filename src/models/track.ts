@@ -68,4 +68,8 @@ export class Track {
   updated_at!: Date;
 
   message: String;
+
+  mp3_size: number;
+  
+  aiff_size: number;
 }
